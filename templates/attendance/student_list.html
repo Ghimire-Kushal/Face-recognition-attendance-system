@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<h1>Students</h1>
+
+<div class="card">
+  <h3>Add student</h3>
+  <form method="post" action="{% url 'student_add' %}" class="grid grid-2">
+    {% csrf_token %}
+    <div class="form-row"><label>Full name</label><input type="text" name="full_name" required></div>
+    <div class="form-row"><label>Roll number</label><input type="text" name="roll_number" required></div>
+    <div class="form-row"><label>Email (for absence notifications, optional)</label><input type="text" name="email"></div>
+    <div class="form-row">
+      <label>Section</label>
+      <select name="section" required>
+        {% for s in sections %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <label><input type="checkbox" name="consent_given"> Student has given consent to store face biometric data</label>
+    </div>
+    <div><button class="btn" type="submit">Add student</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Roll</th><th>Name</th><th>Section</th><th>Enrolled</th><th></th></tr></thead>
+    <tbody>
+    {% for st in students %}
+      <tr>
+        <td>{{ st.roll_number }}</td>
+        <td><a href="{% url 'student_detail' st.id %}">{{ st.full_name }}</a></td>
+        <td>{{ st.section.name }}</td>
+        <td>{% if st.is_enrolled %}<span class="badge badge-green">Yes</span>{% else %}<span class="badge badge-amber">No</span>{% endif %}</td>
+        <td><a href="{% url 'enroll_page' st.id %}">Enroll face →</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="muted">No students yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

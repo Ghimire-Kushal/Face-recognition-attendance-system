@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-face_attendance}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60"
+    volumes:
+      - .:/app
+      - insightface_cache:/root/.insightface
+      - media:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_ENV: ${DJANGO_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DB_NAME: ${DB_NAME:-face_attendance}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-attendance@faceroll.local}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      # Off by default here since docker-compose has no TLS-terminating
+      # reverse proxy in front of it; set True once you put one (nginx/Caddy) in place.
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+  insightface_cache:
+  media:

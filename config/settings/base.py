@@ -1,10 +1,9 @@
 from pathlib import Path
 from decouple import config, Csv
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 INSTALLED_APPS = [
@@ -87,3 +86,6 @@ FACE_MATCH_THRESHOLD = config('FACE_MATCH_THRESHOLD', default=0.40, cast=float)
 FACE_LOW_CONFIDENCE_FLOOR = config('FACE_LOW_CONFIDENCE_FLOOR', default=0.30, cast=float)
 LIVENESS_REQUIRED = config('LIVENESS_REQUIRED', default=False, cast=bool)
 INSIGHTFACE_MODEL_NAME = 'buffalo_l'
+
+# ---- Email (used for absent-student notifications) ----
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='attendance@faceroll.local')

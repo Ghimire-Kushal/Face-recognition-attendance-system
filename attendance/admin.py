@@ -10,9 +10,9 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('roll_number', 'full_name', 'section', 'consent_given', 'is_enrolled', 'created_at')
+    list_display = ('roll_number', 'full_name', 'email', 'section', 'consent_given', 'is_enrolled', 'created_at')
     list_filter = ('section', 'consent_given')
-    search_fields = ('roll_number', 'full_name')
+    search_fields = ('roll_number', 'full_name', 'email')
 
     @admin.display(boolean=True)
     def is_enrolled(self, obj):

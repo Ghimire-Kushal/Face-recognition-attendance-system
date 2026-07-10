@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Sessions{% endblock %}
+{% block content %}
+<h1>Sessions</h1>
+
+<div class="card">
+  <h3>Start a session</h3>
+  <form method="post" class="flex">
+    {% csrf_token %}
+    <!-- psu -->
+    <select name="section" required>
+      {% for s in sections %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+    </select>
+    <button class="btn" type="submit">Start session</button>
+  </form>
+  <p class="muted mt" style="margin-top:8px;">Only one active session per section is allowed.</p>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Section</th><th>Date</th><th>Started</th><th>Present</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for s in sessions %}
+      <tr>
+        <td>{{ s.section.name }}</td>
+        <td>{{ s.date }}</td>
+        <td>{{ s.start_time|time:"H:i" }}</td>
+        <td>{{ s.present_count }}</td>
+        <td>{% if s.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-muted">Ended</span>{% endif %}</td>
+        <td class="flex">
+          <a href="{% url 'session_detail' s.id %}">Detail</a>
+          {% if s.is_active %}<a href="{% url 'kiosk_page' s.id %}">Kiosk →</a>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="muted">No sessions yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

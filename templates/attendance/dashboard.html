@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<p class="muted">Today · {% now "F j, Y" %}</p>
+
+<form method="get" class="flex mt" style="margin-bottom:20px;">
+  <select name="section">
+    <option value="">All sections</option>
+    {% for s in sections %}
+      <option value="{{ s.id }}" {% if s.id == selected_section %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+  <input type="date" name="from" value="{{ date_from }}">
+  <input type="date" name="to" value="{{ date_to }}">
+  <button class="btn btn-outline" type="submit">Filter</button>
+</form>
+
+<div class="grid grid-3">
+  {% for stat in section_stats %}
+  <div class="card">
+    <h3>{{ stat.section.name }}</h3>
+    <div class="flex-between">
+      <div class="stat"><div class="num">{{ stat.present }}</div><div class="label">Present</div></div>
+      <div class="stat"><div class="num">{{ stat.absent }}</div><div class="label">Absent</div></div>
+      <div class="stat"><div class="num">{{ stat.total_students }}</div><div class="label">Total</div></div>
+    </div>
+    {% if stat.session %}
+      <div class="mt"><a href="{% url 'session_detail' stat.session.id %}">View today's session →</a></div>
+    {% else %}
+      <form method="post" action="{% url 'session_list' %}" class="mt">
+        {% csrf_token %}
+        <input type="hidden" name="section" value="{{ stat.section.id }}">
+        <button class="btn btn-outline" type="submit">Start session</button>
+      </form>
+    {% endif %}
+  </div>
+  {% empty %}
+  <p class="muted">No sections yet. Add one in the <a href="/admin/attendance/section/add/">admin</a>.</p>
+  {% endfor %}
+</div>
+
+<h2 class="mt">Sessions</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Section</th><th>Date</th><th>Present</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for s in today_sessions %}
+      <tr>
+        <td>{{ s.section.name }}</td>
+        <td>{{ s.date }}</td>
+        <td>{{ s.present_count }}</td>
+        <td>{% if s.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-muted">Ended</span>{% endif %}</td>
+        <td><a href="{% url 'session_detail' s.id %}">Open</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="muted">No sessions match this filter.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

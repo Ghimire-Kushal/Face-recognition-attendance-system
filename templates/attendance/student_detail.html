@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }}{% endblock %}
+{% block content %}
+<h1>{{ student.full_name }}</h1>
+<p class="muted">{{ student.roll_number }} · {{ student.section.name }}</p>
+
+<div class="grid grid-3">
+  <div class="card stat"><div class="num">{{ attendance_pct }}%</div><div class="label">Last 30 days</div></div>
+  <div class="card stat"><div class="num">{{ records|length }}</div><div class="label">Sessions present</div></div>
+  <div class="card stat"><div class="num">{% if student.is_enrolled %}✓{% else %}—{% endif %}</div><div class="label">Face enrolled</div></div>
+</div>
+
+<div class="card">
+  <h3>Attendance — last 30 days</h3>
+  <canvas id="historyChart" height="80"></canvas>
+</div>
+
+<div class="card">
+  <h3>Enrolled face angles ({{ embeddings|length }})</h3>
+  {% if embeddings %}
+  <table>
+    <thead><tr><th>#</th><th>Captured</th><th></th></tr></thead>
+    <tbody>
+    {% for e in embeddings %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ e.created_at|date:"Y-m-d H:i" }}</td>
+        <td>
+          <form method="post" action="{% url 'embedding_delete' e.id %}" onsubmit="return confirm('Delete this captured angle?');" style="display:inline;">
+            {% csrf_token %}
+            <button class="btn btn-outline" style="padding:4px 10px;font-size:12px;" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="muted">No face captured yet.</p>
+  {% endif %}
+</div>
+
+<div class="card flex-between">
+  <div>
+    <a href="{% url 'enroll_page' student.id %}" class="btn btn-outline">{% if student.is_enrolled %}Add more angles{% else %}Enroll face{% endif %}</a>
+  </div>
+  <form method="post" action="{% url 'student_delete_data' student.id %}" onsubmit="return confirm('This permanently deletes this student\'s face embeddings and photo. Continue?');">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Delete my biometric data</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('historyChart'), {
+  type: 'line',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Present',
+      data: {{ chart_data|safe }},
+      borderColor: '#1a4d3a',
+      backgroundColor: 'rgba(26,77,58,0.15)',
+      tension: 0.2,
+      fill: true,
+    }]
+  },
+  options: { scales: { y: { min: 0, max: 1, ticks: { stepSize: 1 } } } }
+});
+</script>
+{% endblock %}

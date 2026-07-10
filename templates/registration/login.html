@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div style="max-width:360px;margin:60px auto;">
+  <h1>FaceRoll</h1>
+  <p class="muted">Sign in to continue</p>
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label>Username</label>
+        {{ form.username }}
+      </div>
+      <div class="form-row">
+        <label>Password</label>
+        {{ form.password }}
+      </div>
+      {% if form.errors %}<p style="color:var(--red);font-size:13px;">Invalid username or password.</p>{% endif %}
+      <button class="btn" type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

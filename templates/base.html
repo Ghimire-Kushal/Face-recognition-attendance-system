@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Attendance{% endblock %} · FaceRoll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="topbar">
+  <a href="{% url 'dashboard' %}" class="brand">FaceRoll</a>
+  <nav>
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <a href="{% url 'student_list' %}">Students</a>
+    <a href="{% url 'session_list' %}">Sessions</a>
+    <a href="{% url 'logout' %}">Logout</a>
+  </nav>
+</div>
+{% endif %}
+<div class="container">
+{% if messages %}
+  {% for message in messages %}
+    <div class="card" style="border-color:var(--green);color:var(--green);">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

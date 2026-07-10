@@ -95,6 +95,7 @@ def student_list(request):
 def student_add(request):
     full_name = request.POST.get('full_name', '').strip()
     roll_number = request.POST.get('roll_number', '').strip()
+    email = request.POST.get('email', '').strip()
     section_id = request.POST.get('section')
     consent_given = request.POST.get('consent_given') == 'on'
 
@@ -102,6 +103,7 @@ def student_add(request):
         Student.objects.create(
             full_name=full_name,
             roll_number=roll_number,
+            email=email,
             section_id=section_id,
             consent_given=consent_given,
         )

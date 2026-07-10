@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Report — {{ session.section.name }}{% endblock %}
+{% block content %}
+<h1>Report — {{ session.section.name }}</h1>
+<p class="muted">{{ session.date }}</p>
+<div class="flex">
+  <a href="{% url 'session_export_csv' session.id %}" class="btn btn-outline">Export CSV</a>
+  <form method="post" action="{% url 'session_notify_absentees' session.id %}" onsubmit="return confirm('Email every absent student with an address on file?');">
+    {% csrf_token %}
+    <button class="btn btn-outline" type="submit" {% if not absent_with_email %}disabled title="No absent students have an email on file"{% endif %}>
+      Notify absentees ({{ absent_with_email }})
+    </button>
+  </form>
+</div>
+
+<div class="grid grid-2 mt">
+  <div class="card">
+    <h3>Present ({{ present_records|length }})</h3>
+    <table>
+      <thead><tr><th>Roll</th><th>Name</th><th>Time</th><th>Confidence</th></tr></thead>
+      <tbody>
+      {% for r in present_records %}
+        <tr><td>{{ r.student.roll_number }}</td><td>{{ r.student.full_name }}</td><td>{{ r.marked_at|time:"H:i:s" }}</td><td>{{ r.confidence|floatformat:3 }}</td></tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">None yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Absent ({{ absent_students|length }})</h3>
+    <table>
+      <thead><tr><th>Roll</th><th>Name</th></tr></thead>
+      <tbody>
+      {% for s in absent_students %}
+        <tr><td>{{ s.roll_number }}</td><td>{{ s.full_name }}</td></tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted">Everyone present.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
