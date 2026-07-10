@@ -17,6 +17,7 @@ urlpatterns = [
     path('sessions/<int:session_id>/', views.session_detail, name='session_detail'),
     path('sessions/<int:session_id>/report/', views.session_report, name='session_report'),
     path('sessions/<int:session_id>/export/', views.session_export_csv, name='session_export_csv'),
+    path('sessions/<int:session_id>/notify-absentees/', views.session_notify_absentees, name='session_notify_absentees'),
     path('sessions/<int:session_id>/end/', views.session_end, name='session_end'),
 
     path('sections/<int:section_id>/export-range/', views.section_export_range_csv, name='section_export_range_csv'),

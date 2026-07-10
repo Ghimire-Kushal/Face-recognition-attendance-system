@@ -14,6 +14,7 @@ class Section(models.Model):
 class Student(models.Model):
     full_name = models.CharField(max_length=150)
     roll_number = models.CharField(max_length=30, unique=True)
+    email = models.EmailField(blank=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='students')
     enrolled_photo = models.ImageField(upload_to='enrolled_photos/', blank=True, null=True)
     consent_given = models.BooleanField(default=False)

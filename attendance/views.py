@@ -6,7 +6,9 @@ import json
 import cv2
 import numpy as np
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -247,7 +249,38 @@ def session_report(request, session_id):
         'session': session,
         'present_records': present_records,
         'absent_students': absent_students,
+        'absent_with_email': absent_students.exclude(email='').count(),
     })
+
+
+@login_required
+@require_POST
+def session_notify_absentees(request, session_id):
+    """Email every absent student with an address on file. Uses the
+    console backend in dev (prints to the runserver terminal) and real SMTP
+    in prod - see config/settings/dev.py and prod.py."""
+    session = get_object_or_404(AttendanceSession.objects.select_related('section'), pk=session_id)
+    present_ids = session.records.values_list('student_id', flat=True)
+    absentees = session.section.students.exclude(id__in=present_ids).exclude(email='')
+
+    sent = 0
+    for student in absentees:
+        send_mail(
+            subject=f'Absence recorded — {session.section.name}, {session.date}',
+            message=(
+                f'Hi {student.full_name},\n\n'
+                f'You were marked absent for {session.section.name} on {session.date}. '
+                f'If this is a mistake, contact your instructor.\n\n'
+                f'- FaceRoll Attendance'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[student.email],
+            fail_silently=True,
+        )
+        sent += 1
+
+    messages.success(request, f'Sent {sent} absence notification email(s).')
+    return redirect('session_report', session_id=session.id)
 
 
 @login_required
