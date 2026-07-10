@@ -131,6 +131,7 @@ def student_detail(request, student_id):
         'attendance_pct': attendance_pct,
         'chart_labels': json.dumps(chart_labels),
         'chart_data': json.dumps(chart_data),
+        'embeddings': student.embeddings.order_by('created_at'),
     })
 
 
@@ -147,6 +148,17 @@ def student_delete_data(request, student_id):
     student.save()
     matcher.refresh()
     return redirect('student_detail', student_id=student.id)
+
+
+@login_required
+@require_POST
+def embedding_delete(request, embedding_id):
+    """Delete a single bad enrollment angle without wiping the whole enrollment."""
+    embedding = get_object_or_404(FaceEmbedding, pk=embedding_id)
+    student_id = embedding.student_id
+    embedding.delete()
+    matcher.refresh()
+    return redirect('student_detail', student_id=student_id)
 
 
 # ---------- enrollment ----------
@@ -309,7 +321,12 @@ def section_export_range_csv(request, section_id):
 @ensure_csrf_cookie
 def kiosk_page(request, session_id):
     session = get_object_or_404(AttendanceSession.objects.select_related('section'), pk=session_id)
-    return render(request, 'attendance/kiosk.html', {'session': session})
+    enrolled_count = Student.objects.filter(section=session.section, embeddings__isnull=False).distinct().count()
+    return render(request, 'attendance/kiosk.html', {
+        'session': session,
+        'liveness_required': settings.LIVENESS_REQUIRED,
+        'enrolled_count': enrolled_count,
+    })
 
 
 # ---------- recognition API ----------

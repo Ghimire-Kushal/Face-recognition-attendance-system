@@ -9,6 +9,7 @@ urlpatterns = [
     path('students/add/', views.student_add, name='student_add'),
     path('students/<int:student_id>/', views.student_detail, name='student_detail'),
     path('students/<int:student_id>/delete-data/', views.student_delete_data, name='student_delete_data'),
+    path('embeddings/<int:embedding_id>/delete/', views.embedding_delete, name='embedding_delete'),
 
     path('enroll/<int:student_id>/', views.enroll_page, name='enroll_page'),
 
