@@ -10,6 +10,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download the buffalo_l model so it's baked into the image instead of
+# being fetched (and competing for memory) on the first request in prod.
+RUN python -c "from insightface.app import FaceAnalysis; FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])"
+
 COPY . .
 
 RUN mkdir -p /app/staticfiles /app/media
