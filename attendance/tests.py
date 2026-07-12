@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from . import matcher
 from .models import AttendanceSession, FaceEmbedding, Section, Student
@@ -118,3 +119,26 @@ class RecognizeThresholdTests(TestCase):
         self.assertEqual(entry['status'], 'matched')
         self.assertFalse(entry['marked'])
         self.assertEqual(self.session.records.count(), 0)
+
+
+@override_settings(AXES_FAILURE_LIMIT=5, AXES_COOLOFF_TIME=1)
+class LoginLockoutTests(TestCase):
+    """django-axes should lock out repeated failed logins against the teacher login."""
+
+    def setUp(self):
+        User.objects.create_user(username='teacher', password='correct-password')
+
+    def _attempt(self, password):
+        return self.client.post(reverse('login'), {'username': 'teacher', 'password': password})
+
+    def test_correct_password_logs_in(self):
+        response = self._attempt('correct-password')
+        self.assertRedirects(response, '/dashboard/')
+
+    def test_locked_out_after_repeated_failures(self):
+        for _ in range(5):
+            self._attempt('wrong-password')
+
+        # even the correct password is now rejected until the cooloff period passes
+        response = self._attempt('correct-password')
+        self.assertEqual(response.status_code, 429)
